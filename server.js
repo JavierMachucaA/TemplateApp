@@ -1,7 +1,8 @@
 var express = require('express');
 const bodyParser = require('body-parser');
 var cors = require('cors');
-
+var pgp = require("pg-promise")(/*options*/);
+var db = pgp("postgres://nutriauser:nutriapass@localhost:5432/nutriadb");
 
 var corsOptions = {
     origin: 'http://example.com',
@@ -15,12 +16,25 @@ const app = express();
 app.use(bodyParser.json());
 app.use(cors(corsOptions))
 
-app.listen(8000, () => {
-    
-    app.route('/api/cats').get((req, res) => {
-        res.send({
-            cats: [{ name: 'lilly' }, { name: 'lucy' }]
-          });
+start();
+
+
+
+
+async function start(){
+	app.listen(8000, () => {
+	
+    app.route('/api/usuarios').get( async (req, res) => {
+		let data = null;
+			await db.one("SELECT * FROM public.usuarios")
+			.then(function (usuarios) {
+				console.log(usuarios);
+				data = usuarios;
+			})
+			.catch(function (error) {
+				console.log("ERROR:", error);
+			});
+			res.send({data});
     });
 
     app.route('/api/cats/:name').get((req, res) => {
@@ -40,8 +54,11 @@ app.listen(8000, () => {
       app.route('/api/cats/:name').delete((req, res) => {
         res.sendStatus(204);
       });
-
-
+	
+	
   });
+}
+  
+  
 
   
